@@ -216,3 +216,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Aider
+.aider*
+.aider.chat.history.md
+.aider.input.history
+start-aider.sh
