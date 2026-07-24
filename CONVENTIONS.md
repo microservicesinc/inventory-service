@@ -1,3 +1,10 @@
+# Aider System Instructions
+
+- **Terminal Output Only**: Never create, modify, or delete files unless explicitly instructed.
+- **Architect Verification**: Always output structural designs to the terminal for user review first.
+- **No Direct Execution**: Do not automatically accept or execute changes on the file system.
+- **Strict Documentation Focus**: Prioritize Markdown output for infrastructure runbooks, architecture diagrams, and system requirements.
+
 # Project Conventions
 
 1. All code must be documented with JSDoc comments.
