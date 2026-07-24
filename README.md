@@ -12,4 +12,18 @@ The Inventory Service is a microservice designed to manage product stock levels 
 - **AWS Lambda**: Handles asynchronous inventory synchronization triggered by SQS.
 - **Pytest**: Framework for unit and integration testing.
 
-## Folder Structure
+## Running the Flask API
+To run the Flask API locally, follow these steps:
+
+1. Ensure you have your virtual environment activated.
+2. Install the dependencies: `pip install -r requirements.txt`
+3. Set the `FLASK_APP` environment variable: `export FLASK_APP=src/api/main.py`
+4. Run the application: `flask run`
+
+## API Documentation
+Once the application is running, you can access the Swagger UI documentation at:
+`http://localhost:5000/apidocs`
+
+## Development
+- Ensure you follow the conventions outlined in `CONVENTIONS.md`.
+- Use `pytest` to run tests.
