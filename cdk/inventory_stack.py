@@ -1,7 +1,10 @@
 from aws_cdk import (
     Stack,
     aws_dynamodb as dynamodb,
+    aws_sqs as sqs,
     custom_resources as cr,
+    aws_lambda as _lambda,
+    aws_lambda_event_sources as lambda_events,
     RemovalPolicy
 )
 from constructs import Construct
@@ -64,3 +67,21 @@ class InventoryStack(Stack):
                 resources=cr.AwsCustomResourcePolicy.ANY_RESOURCE
             )
         )
+
+        # 2. Define the two SQS Queues
+        stock_update_queue = sqs.Queue(self, "StockUpdateQueue", queue_name="StockUpdateQueue")
+        stock_query_queue = sqs.Queue(self, "StockQueryQueue", queue_name="StockQueryQueue")
+
+        # 3. Define the SQS-triggered Lambdas (pointing to our src application directory)
+        update_lambda = _lambda.Function(
+            self, "UpdateStockLambda",
+            runtime=_lambda.Runtime.PYTHON_3_11,
+            code=_lambda.Code.from_asset("../src"), # Relative path to your app code
+            handler="lambdas.update_stock.handler",
+        )
+
+        # 4. Attach SQS Triggers to the Lambdas
+        update_lambda.add_event_source(lambda_events.SqsEventSource(stock_update_queue))
+
+        # 5. Grant Permissions (Smart Defaults!)
+        inventory_table.grant_write_data(update_lambda)

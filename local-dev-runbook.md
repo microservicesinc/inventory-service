@@ -76,3 +76,39 @@ cd cdk && cdklocal destroy --force && cd ..
 # Stop active docker containers
 docker compose down -v
 ```
+
+## Testing Localstack
+
+
+> Remember creating an alias to avoid adding endpoint 
+
+```sh
+alias awslocal="aws --endpoint-url=http://localhost:4566"
+```
+
+```sh
+awslocal sqs send-message \
+  --queue-url http://localhost:4566/000000000000/StockUpdateQueue \
+  --message-body '{"itemId": "item1", "quantityChange": -2}' \
+  --region us-east-1
+```
+
+## Local testing commands
+
+```sh
+# Sending message to update stock via lambda
+awslocal sqs send-message   --queue-url http://localhost:4566/000000000000/StockUpdateQueue   --message-body '{"itemId": "item1", "q│aws: [ERROR]: An error occurred (ResourceNotFoundException) when calling the DescribeLogStreams operation: The specified log group does not exist.
+uantityChange": -6}'   --region us-east-1
+
+# Look for all inventory
+watch -n 2 curl -X GET "http://127.0.0.1:5000/inventory" -H "accept: application/json"
+
+# Manipulate directly an item inventory with api
+curl -X PUT "http://127.0.0.1:5000/inventory/item1" -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"quantity\": 15}"
+
+# Show lambda output
+# 1 identify docker lambda container id
+docker ps
+# 2 show the live output
+docker logs <id> -f
+```
