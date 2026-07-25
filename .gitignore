@@ -222,3 +222,43 @@ __marimo__/
 .aider.chat.history.md
 .aider.input.history
 start-aider.sh
+start-aider-watch.sh
+
+# Docker 
+docker/.env
+docker/.envrc
+docker/.env.local
+docker/.envrc.local
+docker/volume
+
+# ==========================================
+# AWS CDK (Cloud Development Kit) Artifacts
+# ==========================================
+# Compiled CloudFormation templates and deployment packages
+.cdk.out/
+cdk.out/
+
+# CDK Context caches (stores active AWS accounts, VPC structures, etc.)
+cdk.context.json
+
+# ==========================================
+# Python Development & Environment Artifacts
+# ==========================================
+# Python bytecode caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local environment configuration secrets
+.env
+.env.*
+
+# Python virtual environments (if using a local .venv folder inside cdk/)
+.venv/
+env/
+venv/
+ENV/
+
+# IDE files
+.idea/
+.vscode/

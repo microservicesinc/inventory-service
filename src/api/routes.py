@@ -1,6 +1,5 @@
 from flask import Flask, jsonify, request
 from flasgger import Swagger
-# Import your centralized database operations
 from src.database import (
     update_stock_atomic, 
     get_stock_balance, 
@@ -34,7 +33,7 @@ def list_inventory():
         items = scan_all_inventory()
         return jsonify({"items": items}), 200
     except Exception as e:
-        return jsonify({"error": "Internal server database error"}), 500
+        return jsonify({"error": f"Internal database error: {str(e)}"}), 500
 
 @app.route('/inventory/<item_id>', methods=['GET'])
 def get_inventory(item_id):
@@ -56,7 +55,7 @@ def get_inventory(item_id):
     try:
         db_item = get_stock_balance(item_id)
         
-        # Check if item actually exists in the database
+        # Verify item metadata signature exists in the database
         if "stock" in db_item and "SK" in db_item:
             return jsonify({
                 "itemId": item_id,
@@ -65,12 +64,12 @@ def get_inventory(item_id):
             
         return jsonify({"error": "Item not found"}), 404
     except Exception as e:
-        return jsonify({"error": "Internal database read fault"}), 500
+        return jsonify({"error": f"Failed to retrieve record: {str(e)}"}), 500
 
 @app.route('/inventory/<item_id>', methods=['PUT'])
 def update_inventory_stock_endpoint(item_id):
     """
-    Update inventory item stock (Set or calculate adjustment)
+    Update inventory item stock
     ---
     parameters:
       - name: item_id
@@ -93,31 +92,34 @@ def update_inventory_stock_endpoint(item_id):
         description: Item not found
     """
     try:
-        data = request.get_json()
-        quantity = int(data.get("quantity", 0))
+        data = request.get_json() or {}
+        if "quantity" not in data:
+            return jsonify({"error": "Missing quantity property"}), 400
+            
+        quantity = int(data["quantity"])
 
-        # Check existence first 
+        # Look up current item state to calculate the atomic mathematical difference
         db_item = get_stock_balance(item_id)
         if "SK" not in db_item:
             return jsonify({"error": "Item not found"}), 404
 
-        # Calculate difference needed for atomic increment
         current_stock = int(db_item.get("stock", 0))
         adjustment = quantity - current_stock
         
+        # Apply the step mutation securely via Atomic Counter expressions
         updated_attrs = update_stock_atomic(item_id, adjustment)
         
         return jsonify({
             "status": "success", 
-            "item": {"itemId": item_id, "quantity": int(updated_attrs.get("stock"))}
+            "item": {"itemId": item_id, "quantity": int(updated_attrs.get("stock", 0))}
         }), 200
     except Exception as e:
-        return jsonify({"error": "Failed to complete update operation"}), 500
+        return jsonify({"error": f"Stock adjustment transaction failed: {str(e)}"}), 500
 
 @app.route('/inventory', methods=['POST'])
 def create_or_overwrite_inventory():
     """
-    Create or update inventory item directly
+    Create or update inventory item
     ---
     parameters:
       - name: body
@@ -135,24 +137,29 @@ def create_or_overwrite_inventory():
         description: Inventory updated
     """
     try:
-        data = request.get_json()
+        data = request.get_json() or {}
         item_id = data.get("itemId")
-        quantity = int(data.get("quantity", 0))
+        quantity = data.get("quantity")
 
-        # Check if item exists to calculate the atomic adjustment delta
+        if not item_id or quantity is None:
+            return jsonify({"error": "Missing itemId or quantity parameters"}), 400
+
+        quantity = int(quantity)
+
+        # Check existing table items to compute baseline differential
         db_item = get_stock_balance(item_id)
         current_stock = int(db_item.get("stock", 0)) if "SK" in db_item else 0
         adjustment = quantity - current_stock
         
-        # Apply changes atomically
+        # Commit the item initialization or mutation atomically
         updated_attrs = update_stock_atomic(item_id, adjustment)
 
         return jsonify({
             "status": "success", 
-            "item": {"itemId": item_id, "quantity": int(updated_attrs.get("stock"))}
+            "item": {"itemId": item_id, "quantity": int(updated_attrs.get("stock", 0))}
         }), 201
     except Exception as e:
-        return jsonify({"error": "Write failure"}), 500
+        return jsonify({"error": f"Record compilation failure: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
