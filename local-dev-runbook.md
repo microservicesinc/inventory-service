@@ -21,10 +21,12 @@ npm install -g aws-cdk-local aws-cdk
 ## 🚀 Chronological Execution Steps
 
 ### Step 1: Start the LocalStack Container
-Launch the background Docker containers to emulate core AWS capabilities (DynamoDB and SQS) locally.
+In the infra repo the localstack docker compose stack must be up and running.
 ```bash
-docker compose up -d
+#Check for docker containers and look for localstack
+docker ps | grep localstack
 ```
+
 
 ### Step 2: Bootstrap the Local CDK Environment
 Initialize the local container environment with the necessary tracking parameters and staging buckets required by AWS CDK. *(Required only on the very first run).*
