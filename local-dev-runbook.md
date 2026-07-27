@@ -99,7 +99,7 @@ awslocal sqs send-message \
 
 ```sh
 # Sending message to update stock via lambda
-awslocal sqs send-message   --queue-url http://localhost:4566/000000000000/StockUpdateQueue   --message-body '{"itemId": "item1", "q│aws: [ERROR]: An error occurred (ResourceNotFoundException) when calling the DescribeLogStreams operation: The specified log group does not exist.
+awslocal sqs send-message   --queue-url http://localhost:4566/000000000000/StockUpdateQueue   --message-body '{"itemId": "item1", "q
 uantityChange": -6}'   --region us-east-1
 
 # Look for all inventory
